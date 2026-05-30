@@ -13,10 +13,16 @@ import timeSlotsRouter from "./routes/timeSlots";
 
 const app = express();
 
-// Enable CORS for your React frontend
+const corsOrigins = [
+	process.env.FRONTEND_URL,
+	...(process.env.NODE_ENV !== "production"
+		? ["http://localhost:3001", "http://localhost:3000", "http://localhost:3002"]
+		: []),
+].filter((origin): origin is string => Boolean(origin));
+
 app.use(
 	cors({
-		origin: ["http://localhost:3001", "http://localhost:3000", "http://localhost:3002"], // Dev frontend ports
+		origin: corsOrigins.length > 0 ? corsOrigins : true,
 		credentials: true,
 		methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
 		allowedHeaders: ["Content-Type", "Authorization"],
@@ -31,7 +37,7 @@ app.use("/bookings", bookingRouter);
 app.use("/availability", availabilityRouter);
 app.use("/time-slots", timeSlotsRouter);
 
-app.get("/health", requireAuth, (_: Request, res: Response) => {
+app.get("/health", (_: Request, res: Response) => {
 	res.json({ status: "ok" });
 });
 
@@ -59,8 +65,9 @@ app.get("/hello", async (_: Request, res: Response, next: NextFunction) => {
 app.use(ErrorHandler);
 
 const PORT = process.env.PORT ?? 3000;
-app.listen(PORT, async () => {
-	console.log(`Server running on http://localhost:${PORT}`);
+const HOST = "0.0.0.0";
+app.listen(Number(PORT), HOST, async () => {
+	console.log(`Server running on http://${HOST}:${PORT}`);
 	try {
 		await bootstrapDevUsers();
 	} catch (err) {
