@@ -43,8 +43,6 @@ services:
   - type: web
     name: ment-frontend
     runtime: static
-    plan: free
-    region: oregon
     rootDir: frontend-app
     buildCommand: npm ci && npm run build
     staticPublishPath: build
